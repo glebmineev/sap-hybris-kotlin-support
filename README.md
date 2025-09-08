@@ -1,5 +1,5 @@
 # sap-hybris-kotlin-support
-This is example SAP Hybris empty based extention with kotlin support. Inspired by https://www.stackextend.com/hybris/use-kotlin-with-sap-hybris/ article. But this version is support outdated and reload classes and reconfigure spring beans by jrebel.
+This is example SAP Hybris empty based extention with kotlin support. Inspired by https://www.stackextend.com/hybris/use-kotlin-with-sap-hybris/ article. But this version is support outdated classes and reload it by jrebel.
 Example from repository contails service wrote on kotlin lang. Enjoy kotling ;-)
 
 Short instruction:
