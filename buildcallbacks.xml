@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!--
+ Copyright (c) 2019 SAP SE or an SAP affiliate company. All rights reserved.
+-->
+<project name="kotlinext_buildcallbacks">
+    	
+    <!-- 
+	    Called whenever 'ant ear' is used. this callback can be used to modify the content of the ear file
+	
+	     ${ear.path}: 			path to ear
+	 -->
+
+
+    <property environment="env" />
+
+    <taskdef resource="org/jetbrains/kotlin/ant/antlib.xml">
+        <classpath>
+            <fileset dir="${env.KOTLIN_HOME}" includes="*.jar"/>
+        </classpath>
+    </taskdef>
+
+    <macrodef name="extension_compile">
+        <attribute name="extname" />
+        <sequential>
+            <extension_compile_core extname="@{extname}" />
+            <extension_kotlin_core extname="@{extname}" />
+            <extension_generate_deployment extname="@{extname}" />
+            <extension_compile_web extname="@{extname}" />
+            <extension_compile_hmc extname="@{extname}" />
+            <extension_compile_backoffice extname="@{extname}" />
+            <extension_compile_hac extname="@{extname}" />
+        </sequential>
+    </macrodef>
+
+    <macrodef name="extension_kotlin_core">
+        <attribute name="extname" />
+        <sequential>
+            <echo message="## compiling Kotlin source code for ext : @{extname}"/>
+            <if>
+                <isset property="ext.@{extname}.coremodule.available" />
+                <then>
+                    <if>
+                        <available file="${ext.@{extname}.path}/ksrc" />
+                        <then>
+                            <kotlinc moduleName="@{extname}" src="${ext.@{extname}.path}/ksrc" output="${ext.@{extname}.path}/classes" failOnError="true" verbose="true">
+                                <classpath>
+                                    <pathelement path="${build.classpath}" />
+                                    <pathelement path="${HYBRIS_BOOTSTRAP_BIN_DIR}/models.jar" />
+
+                                    <fileset dir="${bundled.tomcat.home}">
+                                        <include name="lib/jsp-api.jar" />
+                                        <include name="lib/servlet-api.jar" />
+                                        <include name="lib/el-api.jar" />
+                                        <include name="lib/wrapper*.jar" />
+                                    </fileset>
+
+                                    <pathelement path="${HYBRIS_TEMP_DIR}/log4j" />
+
+                                    <fileset dir="${env.KOTLIN_HOME}">
+                                        <include name="*.jar" />
+                                    </fileset>
+                                </classpath>
+                            </kotlinc>
+                        </then>
+                    </if>
+                </then>
+            </if>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="build">
+        <sequential>
+            <if>
+                <isfalse value="${de.hybris.platform.ant.production.skip.build}" />
+                <then>
+                    <stopwatch name="build" />
+                    <createenv />
+                    <check_deployments />
+                    <gensource />
+                    <models_build />
+                    <extensions_build />
+                    <if>
+                        <isfalse value="${build.strict.compilation.mode}"/>
+                        <then>
+                            <taskdef name="ycheckjalotypes" classname="de.hybris.ant.taskdefs.compiling.checkitemsxml.CheckJaloTypes">
+                                <classpath>
+                                    <pathelement path="${platformhome}/bootstrap/bin/ybootstrap.jar" />
+                                    <pathelement path="${platformhome}/bootstrap/bin/yant.jar" />
+                                    <fileset dir="${platformhome}/lib/dbdriver">
+                                        <include name="*.jar" />
+                                    </fileset>
+                                    <fileset dir="${platformhome}/ext/core/lib">
+                                        <include name="**/*.jar" />
+                                    </fileset>
+                                    <fileset dir="${platformhome}/lib">
+                                        <include name="*.jar" />
+                                    </fileset>
+                                    <fileset dir="${bundled.tomcat.home}/lib">
+                                        <include name="*.jar" />
+                                    </fileset>
+                                    <pathelement path="${build.classpath}" />
+                                </classpath>
+                            </taskdef>
+                        </then>
+                    </if>
+                    <check_jalo_types />
+                    <stopwatch name="build" action="total" />
+                </then>
+                <else>
+                    <echo message="Running in the production mode. The build will be skipped." />
+                </else>
+            </if>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="extension_build">
+        <attribute name="extname" />
+        <sequential>
+
+            <prepare />
+
+            <echo message="building extension '@{extname}'..." />
+
+            <callback extname="@{extname}" target="before_build" />
+            <outofdate>
+                <sourcefiles>
+                    <fileset dir="${ext.@{extname}.path}">
+                        <include name="src/**/*.java" />
+                        <include name="ksrc/**/*.kt" />
+                        <include name="gensrc/**/*.java" />
+                        <include name="resources/*-items.xml" />
+                        <include name="testsrc/**" />
+                        <include name="web/src/**" />
+                        <include name="web/testsrc/**" />
+                        <include name="web/gensrc/**/*.java" />
+                        <include name="custom/src/**" />
+                        <include name="hmc/src/**" />
+                        <include name="hmc/resources/**" />
+                        <include name="hmc/jsp/**" />
+                        <include name="hmc/testsrc/**" />
+                        <include name="backoffice/src/**" />
+                        <include name="backoffice/resources/**" />
+                        <include name="hac/src/**" />
+                        <include name="hac/testsrc/**" />
+                        <include name="hac/resources/**" />
+                        <include name="*.properties" />
+                        <exclude name="platformhome.properties" />
+                        <include name="*.xml" />
+                    </fileset>
+                    <fileset dir="${platformhome}">
+                        <include name="*.properties" />
+                        <include name="resources/ext_build.xml" />
+                        <include name="*.xml" />
+                    </fileset>
+                    <fileset dir="${ext.@{extname}.path}">
+                        <include name="${ext.@{extname}.additional.src.dir}/**"/>
+                        <include name="${ext.@{extname}.additional.testsrc.dir}/**"/>
+                        <include name="${ext.@{extname}.additional.websrc.dir}/**"/>
+                        <include name="${ext.@{extname}.additional.webtestsrc.dir}/**"/>
+                    </fileset>
+                </sourcefiles>
+                <sequential>
+                    <if>
+                        <not>
+                            <isset property="ext.@{extname}.warextension" />
+                        </not>
+                        <then>
+                            <extension_prepare extname="@{extname}" />
+                            <extension_compile extname="@{extname}" />
+                            <mkdir dir="${HYBRIS_TEMP_DIR}/touch" />
+                            <touch file="${HYBRIS_TEMP_DIR}/touch/@{extname}_srctouch" />
+                        </then>
+                    </if>
+
+                    <if>
+                        <and>
+                            <available file="${ext.@{extname}.path}/src" type="dir" />
+                            <available file="${ext.@{extname}.path}/classes" type="dir" />
+                        </and>
+                        <then>
+                            <groovy_compile
+                                    destdir="${ext.@{extname}.path}/classes"
+                                    srcdir="${ext.@{extname}.path}/src"
+                                    extname="@{extname}"/>
+                        </then>
+                    </if>
+                    <if>
+                        <and>
+                            <available file="${ext.@{extname}.path}/ksrc" type="dir" />
+                            <available file="${ext.@{extname}.path}/classes" type="dir" />
+                        </and>
+                        <then>
+                            <groovy_compile
+                                    destdir="${ext.@{extname}.path}/classes"
+                                    srcdir="${ext.@{extname}.path}/ksrc"
+                                    extname="@{extname}"/>
+                        </then>
+                    </if>
+                    <if>
+                        <and>
+                            <available file="${ext.@{extname}.path}/testsrc" type="dir" />
+                            <available file="${ext.@{extname}.path}/classes" type="dir" />
+                        </and>
+                        <then>
+                            <groovy_compile
+                                    destdir="${ext.@{extname}.path}/classes"
+                                    srcdir="${ext.@{extname}.path}/testsrc"
+                                    extname="@{extname}"/>
+                        </then>
+                    </if>
+                    <if>
+                        <and>
+                            <available file="${ext.@{extname}.path}/groovytestsrc" type="dir" />
+                            <available file="${ext.@{extname}.path}/classes" type="dir" />
+                        </and>
+                        <then>
+                            <groovy_compile
+                                    destdir="${ext.@{extname}.path}/classes"
+                                    srcdir="${ext.@{extname}.path}/groovytestsrc"
+                                    extname="@{extname}"/>
+                        </then>
+                    </if>
+
+                </sequential>
+                <targetfiles path="${HYBRIS_TEMP_DIR}/touch/@{extname}_srctouch"/>
+            </outofdate>
+
+            <!-- Create TestClasses Files -->
+            <outofdate>
+                <sourcefiles>
+                    <fileset dir="${ext.@{extname}.path}">
+                        <include name="testsrc/**" />
+                        <include name="web/testsrc/**" />
+                        <include name="hmc/testsrc/**" />
+                        <include name="hac/testsrc/**" />
+                        <include name="${ext.@{extname}.additional.testsrc.dir}/**"/>
+                        <include name="${ext.@{extname}.additional.webtestsrc.dir}/**"/>
+                        <include name="${ext.@{extname}.additional.hmctestsrc.dir}/**"/>
+                        <include name="${ext.@{extname}.additional.hactestsrc.dir}/**"/>
+                    </fileset>
+                </sourcefiles>
+                <targetfiles path="${HYBRIS_TEMP_DIR}/touch/@{extname}_testsrctouch" />
+                <sequential>
+                    <mkdir dir="${ext.@{extname}.path}/resources/@{extname}" />
+                    <testClassesScanner extension="@{extname}" fileExtensions="java,groovy,${ext.@{extname}.native.file.extension}"
+                                        testSourceFolders="testsrc,${ext.@{extname}.additional.testsrc.dir}" />
+                    <mkdir dir="${HYBRIS_TEMP_DIR}/touch" />
+                    <touch file="${HYBRIS_TEMP_DIR}/touch/@{extname}_testsrctouch" />
+                </sequential>
+            </outofdate>
+
+            <callback extname="@{extname}" target="after_build" />
+        </sequential>
+    </macrodef>
+
+</project>
