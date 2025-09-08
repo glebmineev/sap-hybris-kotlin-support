@@ -5,7 +5,8 @@ Example from repository contails service wrote on kotlin lang. Enjoy kotling ;-)
 Short instruction:
 1. Create environment variable in ant runner terminal
     <br/>
-    <code> export KOTLIN_HOME=/home/user/Projects/cx/hybris/config/kotlinlibs </code> (linux version)
+    <code> export KOTLIN_HOME=/home/user/Projects/cx/hybris/config/kotlinlibs </code>
+    <br/>(linux version)
 3. Create yempty extention
 4. Create ksrc directory
 5. Copy buildcallbacks.xml
