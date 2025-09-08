@@ -1,6 +1,6 @@
 # sap-hybris-kotlin-support
-This is example SAP Hybris empty based extention with kotlin support. Inspired by https://www.stackextend.com/hybris/use-kotlin-with-sap-hybris/ article. But this version is support outdated classes and reload it by jrebel.
-Example from repository contails service wrote on kotlin lang. Enjoy kotling ;-)
+This is example SAP Hybris empty based extention with kotlin support. <br/> Inspired by https://www.stackextend.com/hybris/use-kotlin-with-sap-hybris/ article. <br/> But this version is support outdated classes and reload it by jrebel.
+Example from repository contails service wrote on kotlin lang. <br/> Enjoy kotling ;-)
 
 Short instruction:
 1. Create environment variable in ant runner terminal (linux version)
