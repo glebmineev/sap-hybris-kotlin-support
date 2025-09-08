@@ -7,8 +7,8 @@ Short instruction:
     <br/>
     <code> export KOTLIN_HOME=/home/user/Projects/cx/hybris/config/kotlinlibs </code>
     <br/>
-3. Create yempty extention
-4. Create ksrc directory
-5. Copy buildcallbacks.xml
-6. Libraries also be place in lib directory (usemaven="true" for download it)
+3. Create <code>yempty</code> extention
+4. Create <code>ksrc</code> directory
+5. Copy <code>buildcallbacks.xml</code>
+6. Libraries also be place in lib directory ( <code>usemaven="true"</code> for download it)
 7. Of cause you could download latest kotlin lib versions
