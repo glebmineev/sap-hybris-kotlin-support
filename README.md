@@ -3,10 +3,11 @@ This is example SAP Hybris empty based extention with kotlin support. Inspired b
 Example from repository contails service wrote on kotlin lang. Enjoy kotling ;-)
 
 Short instruction:
-1. Create environment variable in ant runner terminal 
+1. Create environment variable in ant runner terminal
+    <br/>
     <code> export KOTLIN_HOME=/home/user/Projects/cx/hybris/config/kotlinlibs </code> (linux version)
-2. Create yempty extention
-3. Create ksrc directory
-4. Copy buildcallbacks.xml
-5. Libraries also be place in lib directory (usemaven="true" for download it)
-6. Of cause you could download latest kotlin lib versions
+3. Create yempty extention
+4. Create ksrc directory
+5. Copy buildcallbacks.xml
+6. Libraries also be place in lib directory (usemaven="true" for download it)
+7. Of cause you could download latest kotlin lib versions
